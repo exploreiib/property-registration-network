@@ -2,7 +2,15 @@
 
 const {Contract} = require('fabric-contract-api');
 
+//predefined list of Bank Transaction IDs
+const BANK_TRANSACTIONID_LIST_MASTER={
+	upg100:100,
+	upg500:500,
+	upg1000:1000
+};
 
+//Allowed Registration Statuses
+const ALLOWED_PROPERTY_REGISTARTION_STATUS_LIST = ['registered', 'onSale'];
 
 // Common function to read any asset ,using given input key from the network
 // if asset doesn't exist on network, then error will be thrown
@@ -50,13 +58,6 @@ class UsersContract extends Contract {
 	// 2. rechargeAccount
 	// User initiates this transaction to recharge their account with “upgradCoins.”
     async rechargeAccount(ctx,name,ssn,bankTransactionId){
-        //predefined list of Bank Transaction IDs
-        const BANK_TRANSACTIONID_LIST_MASTER={
-	               upg100:100,
-	               upg500:500,
-	               upg1000:1000
-        };
-
 		const userKey = ctx.stub.createCompositeKey('regnet.user', [name,ssn]);
 
 		// Fetch User asset with given ID from blockchain
@@ -64,9 +65,6 @@ class UsersContract extends Contract {
 
 		//validate, if given Bank Transaction ID is valid i.e exist on predefined list of transaction ids 
 		//if doesn't exist, then stop further processing and return proper error message
-		if(!bankTransactionId){
-			throw new Error(`Bank Transaction missing from request`);
-		}
 		if(!(bankTransactionId in BANK_TRANSACTIONID_LIST_MASTER)){
 			throw new Error(`Bank Transaction Id:${bankTransactionId} is Invalid`);
 		}
@@ -88,9 +86,6 @@ class UsersContract extends Contract {
 	// 4. propertyRegistrationRequest
 	// User should call this function to register the details of their property on the property-registration-network
 	async propertyRegistrationRequest(ctx,propertyId,name,ssn,price,status){
-    	//Allowed Registration Statuses
-        const ALLOWED_PROPERTY_REGISTARTION_STATUS_LIST = ['registered', 'onSale'];
-
 		const ownerKey = ctx.stub.createCompositeKey('regnet.user', [name,ssn]);
 		const propertyRequestKey = ctx.stub.createCompositeKey('regnet.request', [propertyId]);
 
@@ -99,12 +94,8 @@ class UsersContract extends Contract {
         
 		//validate if given status input holds valid value
     	//if invalid value, then stop further processing and return proper error message
-		if(!status){
-			throw new Error(`Registration status missing from request!`);
-		} 
-
-		if(!(ALLOWED_PROPERTY_REGISTARTION_STATUS_LIST.includes(status))){
-			throw new Error(`Provided registration status : ${status} is Invalid!`);
+		if(!status || !ALLOWED_PROPERTY_REGISTARTION_STATUS_LIST.includes(status)){
+			throw new Error(`Provided registration status is Invalid!`);
 		}
 
 		const newRequestObject = {
@@ -129,10 +120,6 @@ class UsersContract extends Contract {
 	}
     // 6. updateProperty
 	async updateProperty(ctx,propertyId,name,ssn,status){
-
-		//Allowed Registration Statuses
-        const ALLOWED_PROPERTY_REGISTARTION_STATUS_LIST = ['registered', 'onSale'];
-
 		const propertyOwner = ctx.stub.createCompositeKey('regnet.user', [name,ssn]);
 		const propertyKey = ctx.stub.createCompositeKey('regnet.property', [propertyId]);
 
@@ -148,12 +135,8 @@ class UsersContract extends Contract {
 		
         //validate if given status input holds valid value
     	//if invalid value, then stop further processing and return proper error message
-		if(!status){
-			throw new Error(`Registration status missing from request!`);
-		} 
-
-		if(!(ALLOWED_PROPERTY_REGISTARTION_STATUS_LIST.includes(status))){
-			throw new Error(`Provided registration status : ${status} is Invalid!`);
+        if(!status || !ALLOWED_PROPERTY_REGISTARTION_STATUS_LIST.includes(status)){
+			throw new Error(`Provided registration status is Invalid!`);
 		}
 
 		//update the property status
