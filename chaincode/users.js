@@ -52,9 +52,9 @@ class UsersContract extends Contract {
     async rechargeAccount(ctx,name,ssn,bankTransactionId){
         //predefined list of Bank Transaction IDs
         const BANK_TRANSACTIONID_LIST_MASTER={
-	               "upg100":100,
-	               "upg500":500,
-	               "upg1000":1000
+	               upg100:100,
+	               upg500:500,
+	               upg1000:1000
         };
 
 		const userKey = ctx.stub.createCompositeKey('regnet.user', [name,ssn]);
